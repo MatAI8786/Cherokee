@@ -4,6 +4,7 @@ from flask import Blueprint, jsonify, request
 import os
 import json
 from pathlib import Path
+import requests
 from ..database import SessionLocal
 from ..models import Token, Trade
 from ..trading import PaperTrader
@@ -19,12 +20,54 @@ SESSIONS = {}
 BOT_STATE = {"running": False}
 SETTINGS = {"darkModeEnabled": False, "timeZone": "UTC", "showTradesInTitle": False}
 BACKTEST_RESULTS = {}
+CONFIG_KEYS = [
+    'GOOGLE_API_KEY',
+    'OPENAI_API_KEY',
+    'BINANCE_API_KEY',
+    'ETHERSCAN_API_KEY',
+    'BSC_SCAN_API_KEY',
+]
 
 
 @bp.get('/health')
 def health():
     """Simple health endpoint used by the frontend."""
     return jsonify({'status': 'ok'})
+
+
+@bp.get('/healthz')
+def healthz():
+    """Alias health check for consistency with tooling."""
+    return jsonify({'status': 'ok'})
+
+
+@bp.get('/service-status')
+def service_status():
+    """Return status for backend and scanner services."""
+    scanner_ok = False
+    try:
+        r = requests.get('http://127.0.0.1:5001/healthz', timeout=2)
+        if r.status_code == 200 and r.json().get('status') == 'ok':
+            scanner_ok = True
+    except Exception:
+        scanner_ok = False
+    return jsonify({'backend': 'ok', 'scanner': 'ok' if scanner_ok else 'down'})
+
+
+@bp.get('/config')
+def get_config():
+    """Return current environment configuration values."""
+    return jsonify({k: os.getenv(k, '') for k in CONFIG_KEYS})
+
+
+@bp.post('/config')
+def update_config():
+    """Update environment variables in memory."""
+    data = request.get_json() or {}
+    for k, v in data.items():
+        if k in CONFIG_KEYS:
+            os.environ[k] = v
+    return jsonify({k: os.getenv(k, '') for k in CONFIG_KEYS})
 
 
 @bp.get('/logs')

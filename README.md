@@ -7,19 +7,19 @@ Cherokee2 is a lightweight Flask API and on-chain scanner for experimental meme 
 ```bash
 cp .env.example .env  # add your API keys
 pip install -r requirements.txt
-./start_all.sh        # start API and scanner with logging
+./start_services.sh   # start UI, API and scanner with logging
 ```
 
-The API will be available at `http://127.0.0.1:5000`.
+The API will be available at `http://127.0.0.1:5000` and the React UI on
+`http://localhost:3000`. The UI shows live connection status for the backend and
+scanner services.
 
 ### Startup Script
 
-`start_all.sh` launches the Flask API and the token scanner with colorized logs.
-All output is written to `logs/` and streamed to the terminal. Use `--verbose`
-for debug information or `--headless` when running on a server. After startup
-the script performs a health check against `http://127.0.0.1:5000/api/health`.
-If the check fails, the last lines of the server log are printed for quick
-diagnostics.
+`start_services.sh` launches the React UI, the Flask API and the scanner in that
+order. Each process is supervised and will automatically restart if it crashes.
+Logs are written to `logs/` and the script waits for the API health endpoint at
+`http://127.0.0.1:5000/api/healthz` before starting the scanner.
 
 Logs follow the pattern `logs/startup_YYYYMMDD_HHMMSS.log`, `logs/server.log`,
 and `logs/scanner.log`.

@@ -1,5 +1,6 @@
 import asyncio
 import os
+from aiohttp import web
 from .listeners import BaseListener
 from .analyzer.token_analyzer import TokenAnalyzer
 from .database import SessionLocal, init_db
@@ -17,6 +18,17 @@ async def main():
         bscscan_api_key=os.getenv('BSC_SCAN_API_KEY', '')
     )
     trader = PaperTrader()
+
+    async def start_health_server():
+        async def health(request):
+            return web.json_response({'status': 'ok'})
+
+        app = web.Application()
+        app.router.add_get('/healthz', health)
+        runner = web.AppRunner(app)
+        await runner.setup()
+        site = web.TCPSite(runner, '0.0.0.0', 5001)
+        await site.start()
 
     async def consume():
         while True:
@@ -37,7 +49,7 @@ async def main():
                 # buy a minimal amount for paper trading
                 await trader.buy(token.address, quantity=1, price=1.0, reasoning=token.risk_level)
 
-    await asyncio.gather(listener.start(), consume())
+    await asyncio.gather(listener.start(), consume(), start_health_server())
 
 if __name__ == '__main__':
     asyncio.run(main())
