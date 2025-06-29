@@ -1,0 +1,253 @@
+{
+  "id": "LogicPlayground",
+  "type": "page",
+  "title": "Logic Playground",
+  "description": "Visual builder for AI-driven trading workflows. Drag-and-drop LLMs, data sources, foils, and logic nodes. Save, load, simulate, and deploy custom brains.",
+  "theme": {
+    "mode": "system",               
+    "toggle": true                  
+  },
+  "responsive": true,               
+  "layout": {
+    "type": "horizontalSplit",
+    "left": {
+      "type": "sidebar",
+      "sections": [
+        {
+          "title": "Node Palette",
+          "description": "Drag from here into the canvas.",
+          "components": [
+            { "type": "PaletteNode", "nodeType": "DataSourceNode", "label": "Data Source" },
+            { "type": "PaletteNode", "nodeType": "FoilNode", "label": "JSON Foil" },
+            { "type": "PaletteNode", "nodeType": "LLMNode", "label": "LLM" },
+            { "type": "PaletteNode", "nodeType": "LogicNode", "label": "Logic/Function" },
+            { "type": "PaletteNode", "nodeType": "ApiNode", "label": "API Call" },
+            { "type": "PaletteNode", "nodeType": "OutputNode", "label": "Bot Output" }
+          ]
+        },
+        {
+          "title": "Marketplace",
+          "description": "Saved and shared logic graphs, personalities, templates.",
+          "components": [
+            {
+              "type": "MarketplaceList",
+              "id": "marketplaceList",
+              "actions": [
+                { "type": "Button", "id": "importBtn", "text": "Import" },
+                { "type": "Button", "id": "shareBtn", "text": "Share" }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Templates",
+          "description": "Start from popular logic flows.",
+          "components": [
+            {
+              "type": "TemplateList",
+              "id": "templateList"
+            }
+          ]
+        }
+      ]
+    },
+    "center": {
+      "type": "canvas",
+      "id": "logicGraphEditor",
+      "components": [
+        {
+          "type": "GraphEditor",
+          "id": "graphCanvas",
+          "description": "Drag nodes here and connect them.",
+          "nodes": [],
+          "edges": []
+        }
+      ]
+    },
+    "right": {
+      "type": "propertyPanel",
+      "title": "Node/Graph Properties",
+      "components": [
+        {
+          "type": "TabbedPanel",
+          "tabs": [
+            {
+              "id": "nodeProps",
+              "title": "Node Properties",
+              "components": [
+                {
+                  "type": "DynamicForm",
+                  "id": "nodeForm",
+                  "fields": [
+                    
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "graphProps",
+              "title": "Graph Properties",
+              "components": [
+                {
+                  "type": "TextInput",
+                  "id": "logicGraphName",
+                  "label": "Graph Name",
+                  "bind": "graphProps.name"
+                },
+                {
+                  "type": "TextInput",
+                  "id": "graphDesc",
+                  "label": "Description",
+                  "bind": "graphProps.description"
+                },
+                {
+                  "type": "TagInput",
+                  "id": "tags",
+                  "label": "Tags",
+                  "bind": "graphProps.tags"
+                },
+                {
+                  "type": "Dropdown",
+                  "id": "activePersonality",
+                  "label": "Default Personality",
+                  "optionsBinding": "marketplace.personalities",
+                  "bind": "graphProps.defaultPersonality"
+                }
+              ]
+            },
+            {
+              "id": "versioning",
+              "title": "Versions/History",
+              "components": [
+                {
+                  "type": "VersionHistoryList",
+                  "id": "versionHistory"
+                },
+                {
+                  "type": "Button",
+                  "id": "rollbackVersionBtn",
+                  "text": "Rollback"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "toolbar": [
+    { "type": "Button", "id": "saveGraphBtn", "text": "Save", "action": "logic.saveGraph" },
+    { "type": "Button", "id": "loadGraphBtn", "text": "Load", "action": "logic.loadGraph" },
+    { "type": "Button", "id": "simulateBtn", "text": "Simulate", "action": "logic.simulateGraph" },
+    { "type": "Button", "id": "deployBtn", "text": "Deploy", "action": "logic.deployGraph", "style": "primary" }
+  ],
+  "marketplace": {
+    "personalities": [
+      {
+        "id": "riskAnalyst",
+        "name": "Cautious Analyst",
+        "llmModel": "gpt-4o",
+        "prompt": "Analyze the risk for each token. Be extremely conservative.",
+        "parameters": { "temperature": 0.1, "max_tokens": 256 }
+      },
+      {
+        "id": "opportunist",
+        "name": "Opportunist",
+        "llmModel": "gpt-3.5-turbo",
+        "prompt": "Find quick gain opportunities with calculated risk.",
+        "parameters": { "temperature": 0.7 }
+      }
+      
+    ],
+    "workflows": [
+      
+    ],
+    "templates": [
+      
+    ]
+  },
+  "graphSpec": {
+    "nodes": [
+      
+      {
+        "id": "node1",
+        "type": "DataSourceNode",
+        "label": "Binance Trades",
+        "config": {
+          "api": "binance",
+          "pair": "BTC/USDT",
+          "pollInterval": 2
+        }
+      },
+      {
+        "id": "node2",
+        "type": "FoilNode",
+        "label": "Risk Foil",
+        "config": {
+          "foilTemplate": "risk-analysis-v1",
+          "fields": ["pair", "volume", "walletHolders"]
+        }
+      },
+      {
+        "id": "node3",
+        "type": "LLMNode",
+        "label": "Cautious Analyst",
+        "config": {
+          "personality": "riskAnalyst",
+          "promptOverrides": "",
+          "parameters": { "temperature": 0.2 }
+        }
+      },
+      {
+        "id": "node4",
+        "type": "LogicNode",
+        "label": "Trade Decision",
+        "config": {
+          "condition": "risk < 0.4 and momentum > 0.7",
+          "trueBranch": "node5",
+          "falseBranch": "node6"
+        }
+      },
+      {
+        "id": "node5",
+        "type": "OutputNode",
+        "label": "Bot Output",
+        "config": {
+          "action": "placeTrade",
+          "tradeType": "long"
+        }
+      }
+      
+    ],
+    "edges": [
+      { "from": "node1", "to": "node2" },
+      { "from": "node2", "to": "node3" },
+      { "from": "node3", "to": "node4" },
+      { "from": "node4", "to": "node5" }
+    ]
+  },
+  "features": [
+    "Drag-and-drop node-based workflow editing",
+    "Marketplace for saving/loading/sharing personalities and workflows",
+    "Templates for quick-start logic graphs",
+    "Node property editor for detailed config (LLM, foil, data source, etc)",
+    "Graph property panel (naming, tagging, versioning)",
+    "Graph version history and rollback",
+    "Simulation engine to preview logic on sample data",
+    "Deploy logic and restart bot with new graph",
+    "Light/dark/system theme support, responsive layout"
+  ],
+  "backend": {
+    "apiEndpoints": [
+      { "path": "/api/logic/save", "method": "POST", "description": "Save a logic graph to backend/store" },
+      { "path": "/api/logic/load", "method": "GET", "description": "Load a logic graph by ID or name" },
+      { "path": "/api/logic/simulate", "method": "POST", "description": "Simulate logic graph with sample data" },
+      { "path": "/api/logic/deploy", "method": "POST", "description": "Deploy active logic graph and reload bot" },
+      { "path": "/api/marketplace/personalities", "method": "GET/POST", "description": "Save/load personalities" },
+      { "path": "/api/marketplace/workflows", "method": "GET/POST", "description": "Save/load workflows/templates" }
+    ],
+    "persistence": "All logic graphs, personalities, and templates are stored in backend DB as JSON.",
+    "hotReload": true,
+    "versioning": true
+  }
+}
