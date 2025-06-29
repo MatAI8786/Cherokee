@@ -6,3 +6,4 @@ sqlalchemy
 pytest
 pytest-asyncio
 requests
+python-dotenv

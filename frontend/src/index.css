@@ -21,3 +21,30 @@ nav a {
   background: #ccc;
   margin: 1rem 0;
 }
+
+.status-panel span.ok {
+  color: green;
+}
+.status-panel span.fail {
+  color: red;
+}
+.settings-panel {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 1rem;
+  max-height: 90vh;
+  overflow: auto;
+  z-index: 1000;
+}
+.error-drawer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #fee;
+  border-top: 1px solid #f99;
+  padding: 0.5rem;
+}

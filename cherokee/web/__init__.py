@@ -1,5 +1,6 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
+from dotenv import load_dotenv
 from .api import bp
 from ..logic_playground.api import bp as logic_bp
 from ..scalper import bp as scalper_bp
@@ -9,6 +10,7 @@ from ..database import init_db, populate_sample_data
 import os
 
 def create_app():
+    load_dotenv()
     app = Flask(__name__)
     CORS(app)
     init_db()
