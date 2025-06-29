@@ -1,0 +1,166 @@
+{
+  "_comment": "Cherokee Scalper Module: Ultra-Deep JSON Spec. All comments are in '_comment' fields for JSON validity.",
+  "id": "ScalperModuleV1",
+  "type": "scalper-root",
+  "label": "Scalper",
+  "theme": {
+    "mode": "auto",
+    "light": {},
+    "dark": {}
+  },
+  "navigation": [
+    { "label": "Home", "route": "/" },
+    { "label": "Logic Playground", "route": "/logic" },
+    { "label": "Scalper", "route": "/scalper", "active": true }
+  ],
+  "scalperUI": {
+    "sidebar": {
+      "panels": [
+        {
+          "id": "trending-tokens",
+          "type": "live-feed",
+          "label": "Trending/Hyped Coins",
+          "source": "exchangeAPI+socialAPI",
+          "fields": ["token", "price", "volume24h", "hypeScore", "newListing", "alerts"]
+        },
+        {
+          "id": "marketplace",
+          "type": "marketplace",
+          "label": "Scalping Strategies",
+          "actions": [
+            { "type": "import", "label": "Import" },
+            { "type": "export", "label": "Export" },
+            { "type": "market", "label": "Browse Templates" }
+          ]
+        }
+      ]
+    },
+    "canvas": {
+      "type": "node-graph",
+      "label": "Scalper Logic Flow",
+      "description": "Drag, drop, and chain logic modules (data, signals, LLMs, triggers, trade actions)",
+      "supportsDragDrop": true,
+      "palette": [
+        { "type": "Node", "nodeType": "DataSource", "label": "Market Data", "configurable": true },
+        { "type": "Node", "nodeType": "SocialSentiment", "label": "Sentiment LLM", "providers": ["OpenAI", "Azure", "Llama2", "Custom"], "configurable": true },
+        { "type": "Node", "nodeType": "FoilNode", "label": "Pattern Foil", "patternTypes": ["PumpAndDump", "FOMO", "WhaleActivity"] },
+        { "type": "Node", "nodeType": "ScalperLogic", "label": "Scalper Logic", "customizable": true },
+        { "type": "Node", "nodeType": "TradeTrigger", "label": "Trigger", "conditionExamples": ["VolumeSpike", "SentimentThreshold", "RSI", "BollingerBand"] },
+        { "type": "Node", "nodeType": "TakeProfit", "label": "Take Profit", "config": { "percentRange": [0.1, 10] } },
+        { "type": "Node", "nodeType": "StopLoss", "label": "Stop Loss", "config": { "percentRange": [0.05, 5], "protected": true } },
+        { "type": "Node", "nodeType": "OrderExec", "label": "Order Execution" },
+        { "type": "Node", "nodeType": "LLM", "label": "Custom LLM", "roles": ["risk", "trend", "sentiment"] },
+        { "type": "Node", "nodeType": "Notifier", "label": "Notification", "channels": ["email", "slack", "in-app"] }
+      ],
+      "examples": []
+    },
+    "coinDetailsPanel": {
+      "fields": [
+        "price", "volume", "marketcap", "change24h", "orderbookPreview", "newsSentiment", "hypeScore", "socialMentions"
+      ],
+      "actions": [
+        { "type": "buy", "label": "Buy" },
+        { "type": "sell", "label": "Sell" },
+        { "type": "simulate", "label": "Simulate Trade" }
+      ]
+    },
+    "logicSettingsPanel": {
+      "fields": [
+        { "name": "profitTarget", "type": "number", "min": 0.1, "max": 10, "label": "Profit %" },
+        { "name": "stopLoss", "type": "number", "min": 0.05, "max": 5, "label": "Stop Loss %" },
+        { "name": "protectedStop", "type": "toggle", "label": "Protected Stop-Loss" },
+        { "name": "llmProvider", "type": "select", "options": ["OpenAI", "Azure", "Llama2", "Local"], "label": "LLM Provider" },
+        { "name": "deployMode", "type": "select", "options": ["simulation", "live"], "label": "Mode" }
+      ]
+    }
+  },
+  "backend": {
+    "services": [
+      {
+        "id": "exchangeScanner",
+        "description": "Polls exchanges and APIs for new/trending/hyped coins. Returns live list for UI.",
+        "api": "/api/scalper/feed"
+      },
+      {
+        "id": "socialSentiment",
+        "description": "Fetches and aggregates social media and news sentiment for tokens.",
+        "api": "/api/scalper/sentiment"
+      },
+      {
+        "id": "strategyEngine",
+        "description": "Executes scalper logic graphs as JSON flows. Runs trade actions and manages positions.",
+        "api": ["/api/scalper/deploy", "/api/scalper/stop", "/api/scalper/monitor"]
+      },
+      {
+        "id": "llmManager",
+        "description": "Abstracts LLM calls to any supported provider. Handles prompt wrapping (JSON foils), error catching, and provider switching."
+      },
+      {
+        "id": "riskManager",
+        "description": "Monitors open positions, PnL, and triggers protected stop-losses automatically."
+      }
+    ],
+    "storage": {
+      "strategies": "/scalper_strategies/",
+      "logs": "/logs/scalper/",
+      "positions": "db:sqlite3"
+    },
+    "security": {
+      "apiKeyHandling": "env+encrypted, never send to frontend",
+      "llmApiKeys": "env only, multiple providers",
+      "rateLimit": {
+        "exchange": "backoff and notify UI",
+        "llm": "circuit breaker, provider switch option"
+      }
+    }
+  },
+  "strategies": [
+    {
+      "id": "HypeScalpBasic",
+      "label": "Hyped Coin Scalper",
+      "modules": [
+        { "type": "DataSource", "exchange": "Binance", "criteria": { "newListing": true, "volumeSpike": true } },
+        { "type": "FoilNode", "pattern": "pump-and-dump" },
+        { "type": "SentimentLLM", "provider": "OpenAI", "model": "gpt-4o", "source": "twitter,telegram", "threshold": 0.7 },
+        { "type": "TradeTrigger", "condition": "volume > 2M && sentiment > 0.7", "action": "BUY" },
+        { "type": "TakeProfit", "profitPercent": 1.5 },
+        { "type": "StopLoss", "lossPercent": 1.0, "protected": true }
+      ],
+      "deployMode": "simulation",
+      "llms": [
+        { "id": "SentimentLLM", "label": "Analyzer", "personality": "Cautious" }
+      ],
+      "notifications": { "email": true, "slack": false }
+    },
+    {
+      "id": "NewsDrivenScalper",
+      "label": "News Sentiment Scalper",
+      "modules": [
+        { "type": "DataSource", "exchange": "Binance", "criteria": { "newsMention": true } },
+        { "type": "SentimentLLM", "provider": "Llama2", "model": "llama2-13b", "threshold": 0.6 },
+        { "type": "TradeTrigger", "condition": "sentiment > 0.6", "action": "BUY" },
+        { "type": "TakeProfit", "profitPercent": 2.0 },
+        { "type": "StopLoss", "lossPercent": 1.2, "protected": true }
+      ],
+      "deployMode": "live",
+      "llms": [
+        { "id": "SentimentLLM", "label": "Analyzer", "personality": "Opportunist" }
+      ],
+      "notifications": { "email": true, "slack": true }
+    }
+  ],
+  "llmProviders": [
+    { "id": "openai", "label": "OpenAI GPT", "models": ["gpt-3.5-turbo", "gpt-4o"] },
+    { "id": "azure", "label": "Azure OpenAI", "models": ["gpt-35-turbo", "gpt-4"] },
+    { "id": "llama2", "label": "Llama2 Local", "models": ["llama2-7b", "llama2-13b"] },
+    { "id": "custom", "label": "Custom", "models": ["any"] }
+  ],
+  "notifications": {
+    "types": ["email", "slack", "in-app"],
+    "onTrade": true,
+    "onError": true,
+    "onStopLoss": true
+  },
+  "_comment2": "Add new strategy modules, LLM personalities, or UI/UX features here.",
+  "TODO": "[YOUR_CUSTOM_SCALPER_LOGIC_HERE]"
+}
