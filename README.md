@@ -63,3 +63,16 @@ The app consumes the JSON specification in `logic_playground.json` and exposes t
 - `POST /api/logic/deploy` – deploy the graph
 
 Marketplace endpoints allow saving and retrieving personalities and workflows.
+
+## Scalper Module
+
+The Scalper feature exposes a new set of API endpoints for building and deploying scalping strategies.
+
+- `GET /api/scalper/spec` – return the `scalper.json` specification used by the UI
+- `GET /api/scalper/feed` – live feed of trending tokens (stub data)
+- `GET /api/scalper/sentiment?token=SYMBOL` – placeholder sentiment lookup
+- `POST /api/scalper/deploy` – deploy a strategy JSON and store it under `scalper_strategies/`
+- `POST /api/scalper/stop` – stop a running strategy by `id`
+- `GET /api/scalper/monitor` – list currently active strategies
+
+Strategies are saved as JSON files in the `scalper_strategies/` directory.
