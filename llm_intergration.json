@@ -1,0 +1,105 @@
+{
+  "id": "LLMCodingIntegration",
+  "type": "module",
+  "label": "AI Code Copilot",
+  "description": "Integrate an LLM for real-time code generation and strategy building. Users can describe strategies in natural language or use drag-and-drop, and the LLM generates executable code or JSON logic for the bot.",
+  "theme": { "mode": "auto" },
+  "components": [
+    {
+      "type": "Panel",
+      "label": "Code Copilot",
+      "icon": "💡",
+      "description": "Describe your logic, and let the AI build it for you!",
+      "children": [
+        {
+          "type": "TextInput",
+          "id": "strategyPrompt",
+          "label": "Describe your trading strategy (in plain English or pseudocode)",
+          "placeholder": "e.g. Buy coins with >2x volume spike and positive sentiment, sell after +2% or negative news"
+        },
+        {
+          "type": "Button",
+          "id": "generateCodeBtn",
+          "text": "Generate Logic",
+          "action": "invokeLLM"
+        },
+        {
+          "type": "Dropdown",
+          "id": "llmSelect",
+          "label": "Choose LLM Provider",
+          "options": [
+            { "label": "OpenAI GPT-4o", "value": "openai-gpt4o" },
+            { "label": "Llama 3", "value": "llama3" },
+            { "label": "Deepseek", "value": "deepseek" },
+            { "label": "StarCoder", "value": "starcoder" },
+            { "label": "Custom Endpoint", "value": "custom" }
+          ],
+          "default": "openai-gpt4o"
+        },
+        {
+          "type": "CodeEditor",
+          "id": "codeOutput",
+          "label": "Generated Code/Logic",
+          "language": "python", 
+          "readonly": false,
+          "helperText": "Edit the code or logic as needed. Click 'Deploy' to test it."
+        },
+        {
+          "type": "Button",
+          "id": "deployCodeBtn",
+          "text": "Deploy",
+          "action": "deployLogic"
+        },
+        {
+          "type": "Button",
+          "id": "simulateBtn",
+          "text": "Simulate (Paper Trade)",
+          "action": "simulateLogic"
+        }
+      ]
+    },
+    {
+      "type": "Panel",
+      "label": "History & Saved Strategies",
+      "icon": "📚",
+      "children": [
+        {
+          "type": "List",
+          "id": "historyList",
+          "label": "Generated Strategies",
+          "items": []
+        },
+        {
+          "type": "Button",
+          "id": "importStrategyBtn",
+          "text": "Import from JSON",
+          "action": "importStrategy"
+        }
+      ]
+    }
+  ],
+  "llmSettings": {
+    "providers": [
+      { "id": "openai-gpt4o", "label": "OpenAI GPT-4o", "apiKey": "from-env" },
+      { "id": "llama3", "label": "Llama 3 (local/server)", "endpoint": "http://localhost:8000/v1" },
+      { "id": "deepseek", "label": "Deepseek Coding", "endpoint": "https://api.deepseek.com/v1" },
+      { "id": "starcoder", "label": "StarCoder", "endpoint": "http://localhost:9000/v1" }
+    ],
+    "maxTokens": 2048,
+    "temperature": 0.2,
+    "systemPrompt": "You are a trading strategy copilot. Generate robust, well-documented code or logic graphs (JSON) for algorithmic trading based on user input. Always include error handling and documentation in your outputs."
+  },
+  "apiEndpoints": {
+    "invokeLLM": "/api/llm/generate-logic",
+    "deployLogic": "/api/strategies/deploy",
+    "simulateLogic": "/api/strategies/simulate",
+    "importStrategy": "/api/strategies/import",
+    "history": "/api/strategies/history"
+  },
+  "permissions": {
+    "canWriteCode": true,
+    "canDeployLive": true,
+    "canPaperTrade": true,
+    "editGenerated": true
+  }
+}
