@@ -65,20 +65,23 @@
       ]
     },
     "right": {
-      "type": "propertyPanel",
-      "title": "Node/Graph Properties",
+      "type": "verticalStack",
       "components": [
         {
-          "type": "TabbedPanel",
-          "tabs": [
+          "type": "propertyPanel",
+          "title": "Node/Graph Properties",
+          "components": [
             {
-              "id": "nodeProps",
-              "title": "Node Properties",
-              "components": [
+              "type": "TabbedPanel",
+              "tabs": [
                 {
-                  "type": "DynamicForm",
-                  "id": "nodeForm",
-                  "fields": [
+                  "id": "nodeProps",
+                  "title": "Node Properties",
+                  "components": [
+                    {
+                      "type": "DynamicForm",
+                      "id": "nodeForm",
+                      "fields": [
                     
                   ]
                 }
@@ -131,7 +134,14 @@
               ]
             }
           ]
+        },
+        {
+          "type": "Module",
+          "id": "aiCodeCopilot",
+          "module": "LLMCodingIntegration"
         }
+      ]
+    }
       ]
     }
   },
