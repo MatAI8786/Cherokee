@@ -2,6 +2,8 @@
 
 from flask import Blueprint, jsonify, request
 import os
+import json
+from pathlib import Path
 from ..database import SessionLocal
 from ..models import Token, Trade
 from ..trading import PaperTrader
@@ -11,6 +13,12 @@ bp = Blueprint('api', __name__, url_prefix='/api')
 
 # single PaperTrader instance used for the /trade endpoint
 trader = PaperTrader()
+
+# simple runtime state for new UI endpoints
+SESSIONS = {}
+BOT_STATE = {"running": False}
+SETTINGS = {"darkModeEnabled": False, "timeZone": "UTC", "showTradesInTitle": False}
+BACKTEST_RESULTS = {}
 
 
 @bp.get('/health')
@@ -149,3 +157,83 @@ def scan_token():
     session.commit()
     session.close()
     return jsonify(result)
+
+
+# ------------------ New UI Endpoints ------------------
+
+@bp.get('/ui-spec')
+def ui_spec():
+    """Return the UI design specification JSON."""
+    spec_path = Path(__file__).resolve().parents[2] / 'design.json'
+    with open(spec_path, 'r') as f:
+        data = json.load(f)
+    return jsonify(data)
+
+
+@bp.post('/login')
+def login():
+    """Simple login endpoint storing session info."""
+    data = request.get_json() or {}
+    token = os.urandom(16).hex()
+    SESSIONS[token] = {
+        'botName': data.get('botName'),
+        'apiUrl': data.get('apiUrl'),
+        'username': data.get('username'),
+    }
+    return jsonify({'status': 'ok', 'token': token})
+
+
+@bp.post('/start-bot')
+def start_bot():
+    BOT_STATE['running'] = True
+    return jsonify({'running': True})
+
+
+@bp.post('/stop-bot')
+def stop_bot():
+    BOT_STATE['running'] = False
+    return jsonify({'running': False})
+
+
+@bp.get('/open-trades')
+def get_open_trades():
+    session = SessionLocal()
+    trades = session.query(Trade).order_by(Trade.timestamp.desc()).all()
+    data = [t.to_dict() for t in trades]
+    session.close()
+    return jsonify(data)
+
+
+@bp.get('/chart-data')
+def chart_data():
+    """Return placeholder candlestick data."""
+    candles = [
+        {'time': i, 'open': 100 + i, 'high': 102 + i, 'low': 99 + i, 'close': 101 + i}
+        for i in range(10)
+    ]
+    return jsonify(candles)
+
+
+@bp.get('/settings')
+def get_settings():
+    return jsonify(SETTINGS)
+
+
+@bp.post('/settings')
+def update_settings():
+    SETTINGS.update(request.get_json() or {})
+    return jsonify(SETTINGS)
+
+
+@bp.post('/run-backtest')
+def run_backtest():
+    params = request.get_json() or {}
+    BACKTEST_RESULTS['params'] = params
+    BACKTEST_RESULTS['equity'] = [100, 110, 105]
+    BACKTEST_RESULTS['summary'] = [{'Metric': 'Return', 'Value': '5%'}]
+    return jsonify({'status': 'running'})
+
+
+@bp.get('/backtest-results')
+def backtest_results():
+    return jsonify(BACKTEST_RESULTS)
