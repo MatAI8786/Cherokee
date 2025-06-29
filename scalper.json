@@ -32,6 +32,12 @@
             { "type": "export", "label": "Export" },
             { "type": "market", "label": "Browse Templates" }
           ]
+        },
+        {
+          "id": "ai-code-copilot",
+          "type": "Module",
+          "module": "LLMCodingIntegration",
+          "label": "AI Code Copilot"
         }
       ]
     },
