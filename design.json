@@ -1,0 +1,224 @@
+{
+  "notes": "Preserve all existing Cherokee UI sections and features. Integrate new Freqtrade-inspired features alongside them without duplicating existing logic.",
+  "theme": {
+    "mode": "system",
+    "lightDarkToggle": true    
+  },
+  "responsive": true,          
+  "sections": [
+    {
+      "id": "LoginPage",
+      "type": "page",
+      "layout": { "orientation": "vertical", "align": "center" },
+      "components": [
+        {
+          "type": "TextInput",
+          "id": "botNameInput",
+          "label": "Bot Name",
+          "bind": "loginData.botName",
+          "placeholder": "<Enter a name for your bot>"
+        },
+        {
+          "type": "TextInput",
+          "id": "apiUrlInput",
+          "label": "API URL",
+          "bind": "loginData.apiUrl",
+          "placeholder": "http://localhost:8080"
+        },
+        {
+          "type": "TextInput",
+          "id": "usernameInput",
+          "label": "Username",
+          "bind": "loginData.username",
+          "placeholder": "<Your bot username>"
+        },
+        {
+          "type": "PasswordInput",
+          "id": "passwordInput",
+          "label": "Password",
+          "bind": "loginData.password",
+          "placeholder": "<Your bot password>"
+        },
+        {
+          "type": "Button",
+          "id": "loginButton",
+          "text": "Login",
+          "action": "api.login"
+        }
+      ]
+    },
+    {
+      "id": "TradeDashboard",
+      "type": "page",
+      "layout": {
+        "type": "grid",
+        "rows": 3,
+        "columns": 3,
+        "areas": [
+          "header header header",
+          "chart chart chart",
+          "trades trades trades"
+        ]
+      },
+      "components": [
+        {
+          "type": "Select",
+          "id": "botSelect",
+          "label": "Bot Instance",
+          "dataBinding": "controller.botInstances",
+          "placeholder": "<Select Bot>"
+        },
+        {
+          "type": "Select",
+          "id": "exchangeSelect",
+          "label": "Exchange",
+          "dataBinding": "controller.exchangeList",
+          "placeholder": "<Select Exchange>"
+        },
+        {
+          "type": "Select",
+          "id": "strategySelect",
+          "label": "Strategy",
+          "dataBinding": "controller.strategyList",
+          "placeholder": "<Select Strategy>"
+        },
+        {
+          "type": "Button",
+          "id": "startBotButton",
+          "text": "Start Bot",
+          "action": "api.startBot"
+        },
+        {
+          "type": "Button",
+          "id": "stopBotButton",
+          "text": "Stop Bot",
+          "action": "api.stopBot"
+        },
+        {
+          "type": "Chart",
+          "id": "tradeChart",
+          "chartType": "candlestick",
+          "dataBinding": "controller.chartData",
+          "position": { "area": "chart" }
+        },
+        {
+          "type": "IconButton",
+          "id": "chartConfigButton",
+          "icon": "settings",
+          "tooltip": "Plot Configurator",
+          "action": "ui.openPlotConfigurator"
+        },
+        {
+          "type": "Table",
+          "id": "openTradesTable",
+          "dataBinding": "controller.openTrades",
+          "columns": ["Pair", "Amount", "Open Price", "Current Price", "P/L", "Open Date"],
+          "position": { "area": "trades" }
+        }
+      ]
+    },
+    {
+      "id": "SettingsPage",
+      "type": "page",
+      "layout": { "orientation": "vertical" },
+      "components": [
+        {
+          "type": "Switch",
+          "id": "darkModeSwitch",
+          "label": "Dark Mode",
+          "bind": "settings.darkModeEnabled",
+          "hint": "Automatically adapt or choose theme"
+        },
+        {
+          "type": "Dropdown",
+          "id": "timeZoneSelect",
+          "label": "Time Zone",
+          "dataBinding": "controller.timeZones",
+          "bind": "settings.timeZone",
+          "placeholder": "<Select Timezone>"
+        },
+        {
+          "type": "Switch",
+          "id": "showOpenTradesInHeader",
+          "label": "Show Open Trades in Header",
+          "bind": "settings.showTradesInTitle"
+        },
+        {
+          "type": "Button",
+          "id": "resetLayoutButton",
+          "text": "Reset Layout",
+          "action": "ui.resetLayout"
+        }
+      ]
+    },
+    {
+      "id": "BacktestingPage",
+      "type": "page",
+      "layout": { "orientation": "vertical" },
+      "components": [
+        {
+          "type": "Dropdown",
+          "id": "btStrategySelect",
+          "label": "Strategy",
+          "dataBinding": "controller.strategyList",
+          "placeholder": "<Select strategy for backtest>"
+        },
+        {
+          "type": "Dropdown",
+          "id": "btTimeframeSelect",
+          "label": "Timeframe",
+          "dataBinding": "controller.timeframes",
+          "placeholder": "Use strategy default or select"
+        },
+        {
+          "type": "TextInput",
+          "id": "startingCapitalInput",
+          "label": "Starting Capital",
+          "bind": "backtest.startingCapital",
+          "placeholder": "<Enter initial capital>"
+        },
+        {
+          "type": "DatePicker",
+          "id": "startDatePicker",
+          "label": "Start Date",
+          "bind": "backtest.startDate"
+        },
+        {
+          "type": "DatePicker",
+          "id": "endDatePicker",
+          "label": "End Date",
+          "bind": "backtest.endDate"
+        },
+        {
+          "type": "Button",
+          "id": "runBacktestButton",
+          "text": "Run Backtest",
+          "action": "api.runBacktest"
+        },
+        {
+          "type": "Button",
+          "id": "loadBacktestButton",
+          "text": "Load Results",
+          "action": "api.loadBacktestResults"
+        },
+        {
+          "type": "Chart",
+          "id": "backtestResultChart",
+          "chartType": "equityCurve",
+          "dataBinding": "controller.backtestResults"
+        },
+        {
+          "type": "Table",
+          "id": "backtestSummaryTable",
+          "dataBinding": "controller.backtestSummary",
+          "columns": ["Metric", "Value"]
+        }
+      ]
+    },
+    {
+      "id": "CherokeeLegacyPlaceholder",
+      "type": "note",
+      "description": "Include all existing Cherokee UI screens and components here. Do not remove or duplicate existing functionality."
+    }
+  ]
+}
