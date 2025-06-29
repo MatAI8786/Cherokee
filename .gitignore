@@ -4,3 +4,4 @@ __pycache__/
 .env
 test_results.json
 logs/
+frontend/logic_playground/node_modules/
