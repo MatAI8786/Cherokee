@@ -1,11 +1,12 @@
 import os
 import openai
 
-openai.api_key = os.getenv("OPENAI_API_KEY", "")
+# Updated for openai-python >= 1.0.0 (client API)
+client = openai.AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY", ""))
 
 async def evaluate_risk(token_info: dict) -> dict:
     """Query an LLM to provide a risk score and reasoning."""
-    if not openai.api_key:
+    if not client.api_key:
         return {"score": 0.5, "reasoning": "No API key provided"}
 
     prompt = (
@@ -14,7 +15,7 @@ async def evaluate_risk(token_info: dict) -> dict:
         f"Token: {token_info.get('name')} ({token_info.get('symbol')})\n"
         f"Details: {token_info}"
     )
-    response = await openai.ChatCompletion.acreate(
+    response = await client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": prompt}],
     )
