@@ -1,5 +1,6 @@
 import os
 import openai
+from cherokee.llm_manager import _classify_exception, logger
 
 # Updated for openai-python >= 1.0.0 (client API)
 client = openai.AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY", ""))
@@ -15,10 +16,15 @@ async def evaluate_risk(token_info: dict) -> dict:
         f"Token: {token_info.get('name')} ({token_info.get('symbol')})\n"
         f"Details: {token_info}"
     )
-    response = await client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": prompt}],
-    )
+    try:
+        response = await client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
+        )
+    except Exception as exc:  # pragma: no cover - runtime errors
+        code = _classify_exception(exc)
+        logger.error("LLM risk provider failed: %s", exc)
+        return {"score": 0.5, "reasoning": f"{code}: {exc}"}
     content = response.choices[0].message["content"].strip()
     try:
         score_str, reason = content.split("\n", 1)
